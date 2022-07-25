@@ -1,1 +1,1 @@
-pub mod DenseShape;
+pub mod dense_shape;
