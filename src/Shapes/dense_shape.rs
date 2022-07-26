@@ -1,12 +1,12 @@
 pub struct DenseShape {
-    pub x: u32,
-    pub y: u32,
-    pub z: u32,
-    pub range: u32,
+    pub x: usize,
+    pub y: usize,
+    pub z: usize,
+    pub range: usize,
 }
 
 impl DenseShape {
-    pub fn new(x: u32, y: u32, z: u32) -> DenseShape {
+    pub fn new(x: usize, y: usize, z: usize) -> DenseShape {
 
         DenseShape {
             x: x,
