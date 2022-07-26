@@ -13,7 +13,7 @@ impl DenseShape {
             y: y,
             z: z,
             range: x*y*z
-        };
+        }
     }
     
 }
