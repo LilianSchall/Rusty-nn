@@ -1,8 +1,8 @@
 pub enum DenseLosses {
-    NO_LOSS,
-    CATEGORICALCROSSENTROPY,
-    BINARYCROSSENTROPY,
-    MEANSQUAREDERROR,
-    CUSTOMLOSS
+    NoLoss,
+    CategoricalCrossEntropy,
+    BinaryCrossEntropy,
+    MeanSquaredError,
+    CustomLoss
 }
 
