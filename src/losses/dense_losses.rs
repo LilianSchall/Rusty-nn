@@ -12,7 +12,7 @@ pub enum DenseLosses {
     CustomLoss
 }
 
-pub fn calculate_error(loss: DenseLosses, values: &Matrix, desired_output: &Matrix) -> f64 {
+pub fn calculate_error(loss: &DenseLosses, values: &Matrix, desired_output: &Matrix) -> f64 {
 
     match loss {
         DenseLosses::NoLoss | DenseLosses::CustomLoss => {
@@ -23,6 +23,30 @@ pub fn calculate_error(loss: DenseLosses, values: &Matrix, desired_output: &Matr
         DenseLosses::BinaryCrossEntropy => binary_cross_entropy(values, desired_output),
         DenseLosses::MeanSquaredError => mean_squared_error(values, desired_output)
     }
+}
+
+pub fn derivative_error(loss: &DenseLosses, nb_values: usize, single_guess: f64, single_desired: f64) -> f64 {
+
+    match loss {
+        DenseLosses::NoLoss | DenseLosses::CustomLoss => {
+            println!("No Activation function, exiting..."); 
+            process::exit(1);
+        }
+        DenseLosses::CategoricalCrossEntropy =>
+             d_categorical_cross_entropy(single_guess, single_desired),
+        DenseLosses::BinaryCrossEntropy =>
+             d_binary_cross_entropy(single_guess, single_desired),
+        DenseLosses::MeanSquaredError =>
+             d_mean_squared_error(nb_values, single_guess, single_desired)
+    }
+}
+
+
+
+fn d_categorical_cross_entropy(single_guess: f64, single_desired: f64) -> f64 {
+
+    - (single_desired / single_guess)
+
 }
 
 fn categorical_cross_entropy(values: &Matrix, desired_output: &Matrix) -> f64 {
@@ -45,6 +69,12 @@ fn categorical_cross_entropy(values: &Matrix, desired_output: &Matrix) -> f64 {
     -sum
 }
 
+fn d_binary_cross_entropy(single_guess: f64, single_desired: f64) -> f64 {
+
+    - (single_desired / single_guess) + (1.0 - single_desired) / (1.0 - single_guess)
+
+}
+
 fn binary_cross_entropy(values: &Matrix, desired_output: &Matrix) -> f64 {
 
     let mut sum: f64 = 0.0;
@@ -55,6 +85,12 @@ fn binary_cross_entropy(values: &Matrix, desired_output: &Matrix) -> f64 {
     }
 
     -sum
+}
+
+fn d_mean_squared_error(nb_values: usize, single_guess: f64, single_desired: f64) -> f64 {
+
+    - (2.0 / (nb_values as f64)) * (single_desired - single_guess)
+
 }
 
 fn mean_squared_error(values: &Matrix, desired_output: &Matrix) -> f64 {
