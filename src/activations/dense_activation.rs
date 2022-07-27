@@ -12,22 +12,33 @@ pub enum DenseActivation {
     Tanh
 }
 
+pub fn __sigmoid(x: f64) -> f64 {
+    1.0 / (1.0 + (-x).exp())
+}
+
 fn sigmoid(Z: &mut Matrix) {
     for i in 0..Z.values.len() {
-        let minus_z = Z.values[i];
-        Z.values[i] = 1.0 / (1.0 + minus_z.exp());
+        Z.values[i] = __sigmoid(Z.values[i]);
     }
+}
+
+pub fn __relu(x: f64) -> f64 {
+    if x > 0.0 {x} else {0.0}
 }
 
 fn relu(Z: &mut Matrix){
     for i in 0..Z.values.len() {
-        Z.values[i] = if Z.values[i] > 0.0 {Z.values[i]} else {0.0};
+        Z.values[i] = __relu(Z.values[i]);
     }
+}
+
+pub fn __leaky_relu(x: f64) -> f64 {
+    if x > 0.0 {x * LEAKY_RELU_VALUE} else {0.0}
 }
 
 fn leaky_relu(Z: &mut Matrix){
     for i in 0..Z.values.len() {
-        Z.values[i] = if Z.values[i] > 0.0 {Z.values[i] * LEAKY_RELU_VALUE} else {0.0};
+        Z.values[i] = __leaky_relu(Z.values[i]);
     }
 }
 
@@ -40,9 +51,14 @@ fn softmax(Z: &mut Matrix){
     }
 }
 
+
+pub fn __tanh(x: f64) -> f64 {
+    x.tanh()
+}
+
 fn tanh(Z: &mut Matrix){
     for i in 0..Z.values.len() {
-        Z.values[i] = Z.values[i].tanh();
+        Z.values[i] = __tanh(Z.values[i]);
     }
 }
 
