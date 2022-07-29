@@ -2,18 +2,20 @@ use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::{process, usize};
 
+use crate::maths::matrices::Matrix;
+
 
 pub struct Sample {
-    pub input: Vec<f64>,
-    pub output: Vec<f64>
+    pub input: Matrix,
+    pub output: Matrix
 }
 
 impl Sample {
 
     pub fn new(input: Vec<f64>, output: Vec<f64>) -> Sample{
         Sample {
-            input: input,
-            output: output
+            input: Matrix::vec_to_col_mat(&input),
+            output: Matrix::vec_to_col_mat(&output)
         }
     }
 
@@ -30,15 +32,15 @@ impl Sample {
 
     pub fn print_sample(&self) {
         println!("---Input---");
-        for i in 0..self.input.len() {
-            let x = self.input[i];
+        for i in 0..self.input.y_length {
+            let x = self.input.get(i,0);
             print!("{x}, ");
         }
         println!("");
 
         println!("---Output---");
-        for i in 0..self.output.len() {
-            let x = self.output[i];
+        for i in 0..self.output.y_length {
+            let x = self.output.get(i,0);
             print!("{x}, ");
         }
         println!("");

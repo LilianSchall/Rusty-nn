@@ -25,6 +25,17 @@ impl Matrix {
         }
     }
 
+    pub fn print(&self) {
+        for i in 0..self.y_length {
+            for j in 0..self.x_length {
+                let x = self.get(i, j);
+
+                print!("{x}, ");
+            }
+            println!("");
+        }
+    }
+
     pub fn shuffle(mut self) -> Matrix {
         
         let mut rng = rand::thread_rng();
@@ -133,7 +144,7 @@ impl Matrix {
         mat
     }
 
-    pub fn vec_to_col_mat(vec: Vec<f64>) -> Matrix{
+    pub fn vec_to_col_mat(vec: &Vec<f64>) -> Matrix{
         let mut result = Matrix::new(1, vec.len());
 
         for i in 0..vec.len() {
