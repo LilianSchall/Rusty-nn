@@ -6,7 +6,7 @@ use crate::maths::matrices::Matrix;
 
 pub struct DenseModel {
     nb_layers: usize,
-    loss: DenseLosses,
+    pub loss: DenseLosses,
     activations: Vec<DenseActivation>,
 
     // three-dimensional vector:
@@ -57,12 +57,15 @@ impl DenseModel {
         }
     }
 
-    pub fn feed_forward(&mut self, input: Vec<f64>) {
-        if input.len() != self.values[0].y_length {
+    pub fn result(&self) -> Matrix{
+        self.values[self.nb_layers - 1].copy()
+    }
+
+    pub fn feed_forward(&mut self, input: &Matrix) {
+        if input.y_length != self.values[0].y_length {
             return;
         }
-
-        self.values[0] = Matrix::vec_to_col_mat(input);
+        self.values[0] = input.copy();
         self.raw_values[0] = self.values[0].copy();
 
         for i in 0..(self.nb_layers - 1) {
@@ -70,9 +73,8 @@ impl DenseModel {
             let mut mat = Matrix::dot(&self.weights[i], &self.values[i]);
 
             mat = Matrix::add(&mat, &self.biases[i]);
-
             self.raw_values[i + 1] = mat.copy();
-
+            
             apply_activation(&self.activations[i], &mut mat);
             self.values[i + 1] = mat;
         }
@@ -86,9 +88,10 @@ impl DenseModel {
         }
 
         for l in (1..self.nb_layers).rev() {
-            for i in 0..self.values[l].y_length {
+            for i in 0..self.weights[l - 1].y_length {
                 let d_activation = apply_derivation(&self.activations[l - 1], self.raw_values[l].get(i,0));
                 let result: f64;
+                
                 if l == self.nb_layers - 1 {
                     let d_cost = derivative_error(&self.loss, self.values[l].y_length, self.values[l].get(i,0), output.get(i,0));
                     result = d_activation * d_cost;
@@ -97,7 +100,7 @@ impl DenseModel {
 
                     let mut sum: f64 = 0.0;
 
-                    for j in 0..deltas[l + 1].len() {
+                    for j in 0..self.weights[l].y_length {
                         // why weights[l] and not l + 1 ?
                         // Well, it is for the unique reason that self.weights.len() = self.nb_layers - 1
                         sum += deltas[l + 1][j] * self.weights[l].get(j,i);
@@ -114,11 +117,11 @@ impl DenseModel {
 
     pub fn update_weights(&mut self, deltas: &Vec<Vec<f64>>, learning_rate: f64) {
         for l in (1..self.nb_layers).rev() {
-            for i in 0..deltas[l].len() {
+            for i in 0..self.weights[l - 1].y_length {
                 
                 let derivative_wrt_bias: f64 = deltas[l][i];
 
-                for j in 0..self.values[l - 1].y_length {
+                for j in 0..self.weights[l - 1].x_length {
 
                     let derivative_wrt_weight: f64 = self.values[l - 1].get(j,0) * deltas[l][i];
                     let new_weight_value: f64 = self.weights[l - 1].get(i, j) - derivative_wrt_weight * learning_rate;
