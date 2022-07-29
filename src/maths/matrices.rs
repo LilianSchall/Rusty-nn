@@ -88,20 +88,20 @@ impl Matrix {
             println!("mat1x: {mat1x}, mat2y: {mat2y}");
             process::exit(1);
         }
-        let mut Z = Matrix::new(mat2.x_length, mat1.y_length);
+        let mut mat = Matrix::new(mat2.x_length, mat1.y_length);
         
-        for y in 0..Z.y_length {
-            for x in 0..Z.x_length {
+        for y in 0..mat.y_length {
+            for x in 0..mat.x_length {
                 let mut value: f64= 0.0;
                 for n in 0..mat1.x_length { // or mat2.y_length 
                     
                     value += mat1.get(y,n) * mat2.get(n,x);
                 }
-                Z.set(y, x, value);
+                mat.set(y, x, value);
             }
         }
 
-        Z
+        mat
 
     }
 
@@ -122,15 +122,15 @@ impl Matrix {
             process::exit(1);
         }
 
-        let mut Z = Matrix::new(mat1.x_length, mat1.y_length);
+        let mut mat = Matrix::new(mat1.x_length, mat1.y_length);
 
-        for y in 0..Z.y_length {
-            for x in 0..Z.x_length { 
-                Z.set(y, x, mat1.get(y,x) + mat2.get(y, x));
+        for y in 0..mat.y_length {
+            for x in 0..mat.x_length { 
+                mat.set(y, x, mat1.get(y,x) + mat2.get(y, x));
             }
         }
 
-        Z
+        mat
     }
 
     pub fn vec_to_col_mat(vec: Vec<f64>) -> Matrix{

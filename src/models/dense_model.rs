@@ -67,21 +67,21 @@ impl DenseModel {
 
         for i in 0..(self.nb_layers - 1) {
 
-            let mut Z = Matrix::dot(&self.weights[i], &self.values[i]);
+            let mut mat = Matrix::dot(&self.weights[i], &self.values[i]);
 
-            Z = Matrix::add(&Z, &self.biases[i]);
+            mat = Matrix::add(&mat, &self.biases[i]);
 
-            self.raw_values[i + 1] = Z.copy();
+            self.raw_values[i + 1] = mat.copy();
 
-            apply_activation(&self.activations[i], &mut Z);
-            self.values[i + 1] = Z;
+            apply_activation(&self.activations[i], &mut mat);
+            self.values[i + 1] = mat;
         }
     }
 
     pub fn back_propagate(&mut self, output: &Matrix) -> Vec<Vec<f64>> {
         
         let mut deltas: Vec<Vec<f64>> = Vec::with_capacity(self.nb_layers);
-        for i in 0..self.nb_layers {
+        for _ in 0..self.nb_layers {
             deltas.push(Vec::new());
         }
 

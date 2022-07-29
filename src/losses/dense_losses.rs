@@ -56,7 +56,7 @@ fn categorical_cross_entropy(values: &Matrix, desired_output: &Matrix) -> f64 {
     for i in 0..values.y_length {
         if values.get(i,0) == 0.0 {
             
-            if (desired_output.get(i,0) == 0.0) {
+            if desired_output.get(i,0) == 0.0 {
                 continue;
             }
             else {
