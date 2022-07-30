@@ -217,8 +217,8 @@ impl DenseModel {
         archi_filename.push_str(".arch");
         weights_filename.push_str(".wab");
 
-        let mut archi_file: File = File::open(archi_filename).expect("Error while creating the file: {archi_filename}");
-        let mut weights_file: File = File::open(weights_filename).expect("Error while creating the file: {weights_filename}");
+        let  archi_file: File = File::open(archi_filename).expect("Error while creating the file: {archi_filename}");
+        let  weights_file: File = File::open(weights_filename).expect("Error while creating the file: {weights_filename}");
 
         let mut archi_reader = BufReader::new(archi_file);
         let mut weights_reader = BufReader::new(weights_file);
