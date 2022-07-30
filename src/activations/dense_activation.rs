@@ -2,7 +2,9 @@ use crate::maths::matrices::Matrix;
 use super::LEAKY_RELU_VALUE;
 
 use std::process;
+use std::str::FromStr;
 
+#[derive(strum_macros::Display)]
 pub enum DenseActivation {
     NoActivation, // for safety
     Sigmoid,
@@ -10,6 +12,22 @@ pub enum DenseActivation {
     LeakyRelu,
     Softmax, // output layer only
     Tanh
+}
+
+impl FromStr for DenseActivation {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<DenseActivation, Self::Err> {
+        match input {
+            "NoActivation"  => Ok(DenseActivation::NoActivation),
+            "Sigmoid"       => Ok(DenseActivation::Sigmoid),
+            "Relu"          => Ok(DenseActivation::Relu),
+            "LeakyRelu"     => Ok(DenseActivation::LeakyRelu),
+            "Softmax"       => Ok(DenseActivation::Softmax),
+            "Tanh"          => Ok(DenseActivation::Tanh),
+            _ => Err(())
+        }
+    }
 }
 
 pub fn __sigmoid(x: f64) -> f64 {
