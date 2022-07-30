@@ -4,6 +4,11 @@ use crate::losses::dense_losses::{DenseLosses, derivative_error};
 use crate::shapes::dense_shape::DenseShape;
 use crate::maths::matrices::Matrix;
 
+use std::fs::File;
+use std::io::Write;
+use std::io::{BufReader, BufRead};
+use std::str::FromStr;
+
 pub struct DenseModel {
     nb_layers: usize,
     pub loss: DenseLosses,
@@ -131,4 +136,161 @@ impl DenseModel {
             }
         }
     }
+
+    pub fn save(&self, filename: &String) {
+
+        let mut archi_filename = filename.clone();
+        let mut weights_filename = filename.clone();
+
+        archi_filename.push_str(".arch");
+        weights_filename.push_str(".wab");
+
+        let mut archi_file: File = File::create(archi_filename).expect("Error while creating the file: {archi_filename}");
+        let mut weights_file: File = File::create(weights_filename).expect("Error while creating the file: {weights_filename}");
+
+        let structures: Vec<usize> = self.values.iter().map(|x| {x.y_length}).collect();
+
+        let mut archi_content: String = String::new();
+
+        archi_content.push_str(&structures.len().to_string());
+        archi_content.push_str("\n");
+
+        // saving the neurons and layers structure
+        for i in 0..structures.len() {
+            archi_content.push_str(&structures[i].to_string());
+
+            if i != structures.len() - 1 {
+                archi_content.push_str(" ");
+            }
+        }
+        archi_content.push_str("\n");
+
+        // saving the activations functions
+        for i in 0..self.activations.len() {
+            archi_content.push_str(&self.activations[i].to_string());
+
+            if i != structures.len() - 1 {
+                archi_content.push_str(" ");
+            }
+        }
+        archi_content.push_str("\n");
+
+        // saving the error / cost function
+        archi_content.push_str(&self.loss.to_string());
+        archi_content.push_str("\n");
+
+
+        archi_file.write_all(archi_content.as_bytes()).expect("Error while saving the architecture of the model.");
+
+
+        let mut weights_content: String = String::new();
+
+        for l in 0..self.weights.len() {
+
+            for i in 0..self.weights[l].y_length {
+
+                for j in 0..self.weights[l].x_length {
+
+                    weights_content.push_str(&self.weights[l].get(i,j).to_string());
+
+                    if j != self.weights[l].x_length - 1 {
+                        weights_content.push_str(" ");
+                    }
+                }
+                weights_content.push_str("\n");
+                weights_content.push_str(&self.biases[l].get(i,0).to_string());
+
+                if l != self.weights.len() - 1 {
+                    weights_content.push_str("\n");
+                }
+            }
+        }
+
+        weights_file.write_all(weights_content.as_bytes()).expect("Error while saving the weights and biases of the model.");
+    }
+
+    pub fn load_model(filename: &String) -> DenseModel {
+
+        let mut archi_filename = filename.clone();
+        let mut weights_filename = filename.clone();
+
+        archi_filename.push_str(".arch");
+        weights_filename.push_str(".wab");
+
+        let mut archi_file: File = File::open(archi_filename).expect("Error while creating the file: {archi_filename}");
+        let mut weights_file: File = File::open(weights_filename).expect("Error while creating the file: {weights_filename}");
+
+        let mut archi_reader = BufReader::new(archi_file);
+        let mut weights_reader = BufReader::new(weights_file);
+
+        let mut buffer: String = String::new();
+
+        // getting the number of layers 
+        archi_reader.read_line(&mut buffer).expect("Failed to read the number of layers.");
+
+        let nb_layers: usize = buffer.trim().parse::<usize>().expect("Cannot parse the supposed number of layers.");
+
+        let mut weights: Vec<Matrix> = Vec::with_capacity(nb_layers - 1);
+        let mut biases: Vec<Matrix> = Vec::with_capacity(nb_layers - 1);
+
+        let mut values: Vec<Matrix> = Vec::with_capacity(nb_layers);
+        let mut raw_values: Vec<Matrix> = Vec::with_capacity(nb_layers);
+
+        let activations: Vec<DenseActivation>;
+        let loss: DenseLosses;
+
+
+        buffer = String::new();
+        archi_reader.read_line(&mut buffer).expect("Failed to read the structure of each layers");
+        // getting the structure of each layer
+        let structures: Vec<usize> = buffer.trim().split(' ').map(|x| {x.parse::<usize>().expect("Cannot parse the structure of each layer.")}).collect();
+
+        for i in 0..(structures.len() - 1) {
+            values.push(Matrix::new(1,structures[i]));
+            raw_values.push(Matrix::new(1,structures[i]).shuffle());
+
+            weights.push(Matrix::new(structures[i], structures[i + 1]));
+            biases.push(Matrix::new(1, structures[i + 1]));
+        }
+        values.push(Matrix::new(1,structures[structures.len() - 1]));
+        raw_values.push(Matrix::new(1,structures[structures.len() - 1]));
+
+        buffer = String::new();
+        archi_reader.read_line(&mut buffer).expect("Failed to read the activation function of each layer.");
+        activations = buffer.trim().split(' ').map(|x| {DenseActivation::from_str(x).expect("Cannot parse the activation function")}).collect();
+
+        buffer = String::new();
+        archi_reader.read_line(&mut buffer).expect("Failed to read the cost function of the model.");
+        buffer = buffer.trim().to_string();
+        loss = DenseLosses::from_str(&buffer).expect("Failed to parse the cost function of the model.");
+
+
+        for l in 0..(nb_layers - 1) {
+
+            for i in 0..weights[l].y_length {
+
+                buffer = String::new();
+                weights_reader.read_line(&mut buffer).expect("Failed to read the weight line.");
+                let weights_values: Vec<f64> = buffer.trim().split(' ').map(|x| {x.parse::<f64>().expect("Cannot parse a weight value into a floating point.")}).collect();
+
+                for j in 0..weights[l].x_length {
+                    weights[l].set(i,j,weights_values[j]);
+                }
+
+                buffer = String::new();
+                weights_reader.read_line(&mut buffer).expect("Failed to read the bias line.");
+                biases[l].set(i,0, buffer.trim().parse::<f64>().expect("Cannot parse a bias value into a floating point."));
+            }
+        };
+
+        DenseModel {
+            nb_layers: nb_layers,
+            loss: loss,
+            activations: activations,
+            weights: weights,
+            biases: biases,
+            raw_values: raw_values,
+            values: values
+        }
+    } 
 }
