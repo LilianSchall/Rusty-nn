@@ -2,14 +2,31 @@ use crate::maths::matrices::Matrix;
 use crate::maths::INFINITY;
 
 use std::process;
+use std::str::FromStr;
 
 
+#[derive(strum_macros::Display)]
 pub enum DenseLosses {
     NoLoss,
     CategoricalCrossEntropy,
     BinaryCrossEntropy,
     MeanSquaredError,
     CustomLoss
+}
+
+impl FromStr for DenseLosses {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<DenseLosses, Self::Err> {
+        match input {
+            "NoLoss"                    => Ok(DenseLosses::NoLoss),
+            "CategoricalCrossEntropy"   => Ok(DenseLosses::CategoricalCrossEntropy),
+            "BinaryCrossEntropy"        => Ok(DenseLosses::BinaryCrossEntropy),
+            "MeanSquaredError"          => Ok(DenseLosses::MeanSquaredError),
+            "CustomLoss"                => Ok(DenseLosses::CustomLoss),
+            _ => Err(())
+        }
+    }
 }
 
 pub fn calculate_error(loss: &DenseLosses, values: &Matrix, desired_output: &Matrix) -> f64 {
@@ -101,6 +118,6 @@ fn mean_squared_error(values: &Matrix, desired_output: &Matrix) -> f64 {
         sum += (desired_output.get(i,0) - values.get(i,0)).powi(2);
     }
 
-    (1.0 / values.y_length as f64) * sum
+    (1.0 / values.y_length as f64) * sum 
 
 }
